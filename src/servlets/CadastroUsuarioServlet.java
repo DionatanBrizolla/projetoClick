@@ -13,6 +13,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import classes.Usuario;
 import dao.UsuarioDao;
@@ -76,7 +77,14 @@ public class CadastroUsuarioServlet extends HttpServlet {
 		 
 		 UsuarioDao userDao = new UsuarioDao();
 		 try {
-			userDao.add(user);
+			HttpSession sess = request.getSession(); 
+			if(userDao.add(user)>0){
+				sess.setAttribute("CadastroSucesso","OK");
+				response.sendRedirect("login.jsp");
+			}else{
+				sess.setAttribute("cadastroSucesso","ERRO");
+			}
+			
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

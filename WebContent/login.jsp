@@ -10,7 +10,6 @@
 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css"> 
 </head>
 <body>
-	<body>
         <!--[if lt IE 10]><p class="browsehappy">Seu navegador está <strong>desatualizado</strong>. Atualize-o <a href="http://browsehappy.com/">aqui.</a></p><![endif]-->
 		<div id="login_page">
             <!-- Foto de fundo -->
@@ -92,6 +91,15 @@
 		</div>
 		<script src="${pageContext.request.contextPath}/js/plugins.js"></script>
         <script src="${pageContext.request.contextPath}/js/main.js"></script>
-    </body>
+        
+        <%
+        	if(session.getAttribute("CadastroSucesso")!=null){
+        		if(session.getAttribute("CadastroSucesso").equals("OK")){
+        			out.println("<script>alert('Usuario cadastrado com sucesso!')</script>");
+        			session.invalidate();
+        		}
+        	}
+		
+        %>
 </body>
 </html>

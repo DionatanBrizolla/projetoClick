@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import classes.Usuario;
 
 import db.Conexao;
+import db.PoolDeConexoes;
 
 
 public class UsuarioDao{
@@ -18,11 +19,18 @@ public class UsuarioDao{
 	private Connection con;
 	
 	public UsuarioDao(){
-		Conexao cnx = Conexao.getInstance();
-		con = cnx.getCon();
+		PoolDeConexoes pool = PoolDeConexoes.getInstance();
+		Conexao cnx = pool.getConexao();
+		cnx.reserva();
+		con = cnx.getConnection();
 	}
 
 	public Integer add(Usuario obj) throws SQLException {
+		
+		PoolDeConexoes pool = PoolDeConexoes.getInstance();
+		Conexao cnx = pool.getConexao();
+		cnx.reserva();
+		con = cnx.getConnection();
 		
 		StringBuilder sql= new StringBuilder();
 		sql.append("INSERT INTO usuarios(nome,sobrenome,sexo,email,dataNascimento,senha) values(?,?,?,?,?,?)");
@@ -39,16 +47,17 @@ public class UsuarioDao{
 			ResultSet keys = stm.getGeneratedKeys();
 			keys.next();
 			int key = keys.getInt(1);
-			//con.close();
+			cnx.libera();
 			return key;
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("erro ao tentar adicionar usuario");
+			cnx.libera();
 		}finally{
-			//con.close();
+			cnx.libera();
 		}
-		return 12;
+		return -1;
 	}
 
 	

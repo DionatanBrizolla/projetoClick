@@ -2,14 +2,17 @@ package db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Conexao {
-	
-	private static Conexao instancia;
-	private Connection con;
-	
-	private Conexao(){
+
+	private Connection cnx;
+	private boolean ocupado;
+
+	public Conexao() throws FevasDBException {
 		
 		String driverJDBC = "com.mysql.jdbc.Driver";
 		String nomeUsuario = "root";
@@ -23,38 +26,73 @@ public class Conexao {
 			System.out.println("Driver JDBC carregado");
 			String url = "jdbc:mysql://" + endBanco + ":" + nroPorta + "/" + nomeDatabase;
 			
-			Connection cnx = DriverManager.getConnection(
+			Connection con = DriverManager.getConnection(
 					url, 
 					nomeUsuario, 
 					senha );
 			
 			System.out.println( "Conexão estabelecida" );
-			this.con = cnx;
+			cnx = con;
 		}catch(Exception e){
 			System.out.println(e.getMessage());
 		}
-			
 	}
 	
-	public static Conexao getInstance(){
-		if(instancia==null){
-		  instancia = new Conexao();
-		}
-		return instancia;
+	public Connection getConnection(){
+		return this.cnx;
 	}
-	
-	public Connection getCon(){
-		return this.con;
+
+	public void reserva() {
+		this.ocupado = true;
 	}
-	
-	public void closeCon(){
+
+	public void libera() {
+		this.ocupado = false;
+	}
+
+	public boolean isReservado() {
+		return ocupado;
+	}
+
+	public void close() {
+
 		try {
-			this.con.close();
+			this.cnx.close();
 		} catch (SQLException e) {
-			System.out.println("erro ao fechar a conexão");
 			e.printStackTrace();
 		}
 	}
-	
+
+	public void executaSql( String comando ) throws FevasDBException {
+
+		try {
+			Statement st = cnx.createStatement();
+			st.execute(comando);
+		} catch (SQLException e) {
+			throw new FevasDBException(e);
+		}
+	}
+
+	public PreparedStatement prepareStatement( String comando ) throws FevasDBException {
+
+		PreparedStatement ps = null;
+		try {
+			ps = this.cnx.prepareStatement(comando);
+		} catch (SQLException e) {
+			throw new FevasDBException(e);
+		}
+		return ps;
+
+	}
+
+	public ResultSet executeQuery( String query ) throws FevasDBException {
+
+		try {
+			ResultSet rs = prepareStatement(query).executeQuery();
+			return rs;
+		} catch ( Exception e ) {
+			throw new FevasDBException(e);
+		}
+	}
+
 }
-	
